@@ -388,9 +388,61 @@ function LegalNotice() {
 
         <div className="mt-8 grid gap-5 text-sm leading-7 text-neutral-300">
           <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-6">
-            <h3 className="text-lg font-semibold text-white">
-              Autoría y titularidad
-            </h3>
+            <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-6">
+              <h3 className="text-lg font-semibold text-white">
+                Autoría, titularidad y derechos de propiedad intelectual
+              </h3>
+
+              <p className="mt-3">
+                Esta web, denominada provisionalmente <strong>AutoSonar</strong>, ha sido
+                creada por <strong>Ramiro</strong>, autor del proyecto, del concepto web,
+                de la estructura funcional, del diseño inicial, de los textos y de la
+                implementación de la plataforma.
+              </p>
+
+              <p className="mt-3">
+                Salvo que se indique lo contrario, todos los elementos originales de esta
+                web, incluyendo su código propio, diseño, organización de contenidos,
+                textos, selección de funcionalidades, nombre del proyecto, experiencia de
+                usuario y planteamiento de diagnóstico acústico aplicado a vehículos,
+                pertenecen a su autor.
+              </p>
+
+              <p className="mt-3">
+                Queda expresamente prohibida la copia, reproducción, distribución,
+                modificación, publicación, cesión, venta, transformación o explotación
+                comercial no autorizada de AutoSonar o de cualquiera de sus elementos
+                originales.
+              </p>
+
+              <p className="mt-3">
+                El uso de librerías, modelos de inteligencia artificial, iconos, APIs,
+                servicios externos o tecnologías de terceros no implica cesión alguna sobre
+                los elementos originales creados para AutoSonar. Dichos recursos pertenecen
+                a sus respectivos titulares y se utilizan conforme a sus propias licencias
+                o condiciones.
+              </p>
+            </div>
+
+            <div className="rounded-[1.5rem] border border-red-300/20 bg-red-300/10 p-6 text-red-100">
+              <h3 className="text-lg font-semibold text-white">
+                Prohibición de plagio o uso no autorizado
+              </h3>
+
+              <p className="mt-3">
+                AutoSonar es un proyecto original desarrollado como herramienta de análisis
+                acústico orientativo para vehículos. No se autoriza a terceros a copiar la
+                web, replicar su presentación, reutilizar sus textos, apropiarse de su
+                identidad, clonar su estructura visual o presentarla como un desarrollo
+                propio.
+              </p>
+
+              <p className="mt-3">
+                Cualquier uso no autorizado podrá ser considerado una vulneración de los
+                derechos del autor sobre la obra concreta, sin perjuicio de otras acciones
+                que pudieran corresponder conforme a la normativa aplicable.
+              </p>
+            </div>
 
             <p className="mt-3">
               Esta web, denominada provisionalmente <strong>AutoSonar</strong>,
@@ -507,6 +559,29 @@ function LegalNotice() {
         </div>
       </div>
     </section>
+  );
+}
+
+function CopyrightFooter() {
+  const year = new Date().getFullYear();
+
+  return (
+    <footer className="border-t border-white/10 bg-neutral-950 px-6 py-10 text-center lg:px-8">
+      <div className="mx-auto max-w-5xl">
+        <p className="text-sm text-neutral-300">
+          © {year} AutoSonar · Proyecto, concepto, diseño, textos e implementación
+          desarrollados por <strong className="text-white">Ramiro</strong>.
+          Todos los derechos reservados.
+        </p>
+
+        <p className="mt-3 text-xs leading-6 text-neutral-500">
+          Queda prohibida la copia, reproducción, distribución, modificación,
+          publicación o explotación comercial no autorizada de esta web, su código,
+          diseño, textos, estructura, marca, nombre del proyecto o cualquier elemento
+          original propio de AutoSonar.
+        </p>
+      </div>
+    </footer>
   );
 }
 
