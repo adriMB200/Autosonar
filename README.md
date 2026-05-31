@@ -1,6 +1,6 @@
 # AutoSonar
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/TU_NETLIFY_API_ID/deploy-status)](https://app.netlify.com/sites/TU_NOMBRE_DEL_SITE/deploys)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/TU_NETLIFY_API_ID/deploy-status)](https://app.netlify.com/sites/autosonar/deploys)
 ![React](https://img.shields.io/badge/React-Frontend-61DAFB?logo=react&logoColor=black)
 ![Vite](https://img.shields.io/badge/Vite-Build-646CFF?logo=vite&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-38B2AC?logo=tailwindcss&logoColor=white)
@@ -16,8 +16,6 @@
 La idea es sencilla: el usuario sube o graba un audio del coche, introduce información básica del vehículo y recibe una orientación sobre posibles causas del ruido.
 
 El objetivo no es sustituir a un mecánico, sino ayudar al usuario a entender mejor qué puede estar pasando antes de acudir a un taller.
-
-> Como Shazam, pero orientado a ruidos de coches.
 
 ---
 
