@@ -27,6 +27,8 @@ const GITHUB_URL = "https://github.com/adriMB200";
 
 const MAX_AUDIO_SIZE_MB = 5;
 const MAX_AUDIO_SIZE_BYTES = MAX_AUDIO_SIZE_MB * 1024 * 1024;
+const DIAGNOSIS_HISTORY_KEY = "autosonar_diagnosis_history";
+const MAX_HISTORY_ITEMS = 10;
 
 const sampleResults = [
   {
@@ -751,6 +753,118 @@ function CopyrightFooter() {
   );
 }
 
+
+function DiagnosisHistory({ history, onClearHistory, formatDate }) {
+  if (!history.length) {
+    return (
+      <section className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
+        <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 md:p-10">
+          <p className="text-sm font-medium uppercase tracking-[0.2em] text-emerald-300">
+            Historial
+          </p>
+
+          <h2 className="mt-3 text-3xl font-semibold text-white md:text-5xl">
+            Tus diagnósticos aparecerán aquí.
+          </h2>
+
+          <p className="mt-5 max-w-2xl leading-8 text-neutral-300">
+            Cuando analices un sonido, AutoSonar guardará un resumen local en este navegador.
+            En futuras versiones, este historial podrá sincronizarse con una cuenta de usuario.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
+      <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p className="text-sm font-medium uppercase tracking-[0.2em] text-emerald-300">
+            Historial
+          </p>
+
+          <h2 className="mt-3 text-3xl font-semibold text-white md:text-5xl">
+            Últimos diagnósticos
+          </h2>
+
+          <p className="mt-5 max-w-2xl leading-8 text-neutral-300">
+            Consulta los últimos análisis realizados en este dispositivo. No se suben a una base
+            de datos en esta versión.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={onClearHistory}
+          className="inline-flex items-center justify-center rounded-2xl border border-red-300/20 px-5 py-3 text-sm font-semibold text-red-100 transition hover:bg-red-300/10"
+        >
+          Borrar historial
+        </button>
+      </div>
+
+      <div className="mt-10 grid gap-4 lg:grid-cols-2">
+        {history.map((item) => (
+          <article
+            key={item.id}
+            className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-6"
+          >
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-sm text-neutral-400">{formatDate(item.createdAt)}</p>
+
+                <h3 className="mt-1 text-xl font-semibold text-white">{item.carSummary}</h3>
+              </div>
+
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-medium ${urgencyBadgeClass(
+                  item.result?.urgencia_general
+                )}`}
+              >
+                Urgencia: {item.result?.urgencia_general || "sin valorar"}
+              </span>
+            </div>
+
+            <div className="mt-5 grid gap-3 text-sm text-neutral-300">
+              <p>
+                <span className="font-semibold text-white">Audio:</span> {item.audioName}
+              </p>
+
+              <p>
+                <span className="font-semibold text-white">Calidad:</span>{" "}
+                {item.result?.calidad_audio || "No indicada"}
+              </p>
+
+              <p className="leading-6">
+                <span className="font-semibold text-white">Síntoma:</span> {item.situation}
+              </p>
+
+              <p className="leading-6">
+                <span className="font-semibold text-white">Resumen:</span> {item.result?.resumen}
+              </p>
+            </div>
+
+            {item.result?.posibles_causas?.length > 0 && (
+              <div className="mt-5 rounded-2xl border border-white/10 bg-neutral-950/60 p-4">
+                <p className="text-sm font-semibold text-white">Posibles causas guardadas</p>
+
+                <ul className="mt-3 space-y-2 text-sm text-neutral-300">
+                  {item.result.posibles_causas.slice(0, 3).map((cause, index) => (
+                    <li key={`${cause.causa}-${index}`}>
+                      {index + 1}. {cause.causa}{" "}
+                      {cause.confianza !== undefined ? `(${cause.confianza}% confianza)` : ""}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export default function AutoSonarLanding() {
   const [mode, setMode] = useState("upload");
   const [brand, setBrand] = useState("Volkswagen");
@@ -767,6 +881,7 @@ export default function AutoSonarLanding() {
   const [aiResult, setAiResult] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analyzeError, setAnalyzeError] = useState("");
+  const [diagnosisHistory, setDiagnosisHistory] = useState([]);
 
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef(null);
@@ -783,10 +898,24 @@ export default function AutoSonarLanding() {
   }, [quickSymptoms]);
 
   const diagnosticContext = useMemo(() => {
-    return [situation.trim(), selectedSymptomsText]
-      .filter(Boolean)
-      .join("\n");
+    return [situation.trim(), selectedSymptomsText].filter(Boolean).join("\n");
   }, [situation, selectedSymptomsText]);
+
+  useEffect(() => {
+    try {
+      const savedHistory = localStorage.getItem(DIAGNOSIS_HISTORY_KEY);
+
+      if (!savedHistory) return;
+
+      const parsedHistory = JSON.parse(savedHistory);
+
+      if (Array.isArray(parsedHistory)) {
+        setDiagnosisHistory(parsedHistory);
+      }
+    } catch {
+      localStorage.removeItem(DIAGNOSIS_HISTORY_KEY);
+    }
+  }, []);
 
   function toggleQuickSymptom(symptom) {
     setQuickSymptoms((currentSymptoms) => {
@@ -954,6 +1083,59 @@ export default function AutoSonarLanding() {
     streamRef.current?.getTracks().forEach((track) => track.stop());
   }
 
+
+  function saveDiagnosisToHistory(result) {
+    const historyItem = {
+      id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+      createdAt: new Date().toISOString(),
+      vehicle: {
+        brand,
+        model,
+        year,
+        engine,
+      },
+      carSummary,
+      situation: diagnosticContext || situation || "No indicado",
+      audioName: audioFile?.name || "Audio no indicado",
+      result: {
+        sonido_identificado: result?.sonido_identificado,
+        resumen: result?.resumen || "Sin resumen",
+        calidad_audio: result?.calidad_audio || "No indicada",
+        urgencia_general: result?.urgencia_general || "No indicada",
+        posibles_causas: Array.isArray(result?.posibles_causas) ? result.posibles_causas : [],
+        recomendacion: result?.recomendacion || "",
+        advertencia: result?.advertencia || "",
+      },
+    };
+
+    setDiagnosisHistory((currentHistory) => {
+      const updatedHistory = [historyItem, ...currentHistory].slice(0, MAX_HISTORY_ITEMS);
+
+      localStorage.setItem(DIAGNOSIS_HISTORY_KEY, JSON.stringify(updatedHistory));
+
+      return updatedHistory;
+    });
+  }
+
+  function clearDiagnosisHistory() {
+    localStorage.removeItem(DIAGNOSIS_HISTORY_KEY);
+    setDiagnosisHistory([]);
+  }
+
+  function formatHistoryDate(value) {
+    try {
+      return new Date(value).toLocaleString("es-ES", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return "Fecha no disponible";
+    }
+  }
+
   async function analyzeWithAI() {
     try {
       setAnalyzeError("");
@@ -1001,6 +1183,8 @@ export default function AutoSonarLanding() {
       }
 
       setAiResult(data.result);
+      saveDiagnosisToHistory(data.result);
+      setCurrentStep(diagnosticSteps.length);
     } catch (error) {
       setAnalyzeError(error.message || "Error analizando el audio con IA.");
     } finally {
@@ -1967,6 +2151,12 @@ export default function AutoSonarLanding() {
           </div>
         </div>
       </section>
+
+      <DiagnosisHistory
+        history={diagnosisHistory}
+        onClearHistory={clearDiagnosisHistory}
+        formatDate={formatHistoryDate}
+      />
 
       <section className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
         <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
