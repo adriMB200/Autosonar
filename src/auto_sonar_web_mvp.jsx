@@ -6,7 +6,6 @@ import {
   Upload,
   Car,
   Wrench,
-  Gauge,
   ShieldAlert,
   Volume2,
   CheckCircle2,
@@ -16,7 +15,15 @@ import {
   Square,
   Loader2,
   Download,
+  Gauge,
+  Clock,
+  FileText,
+  ShieldCheck,
+  Search,
 } from "lucide-react";
+
+const AUTHOR = "AdriMB200";
+const GITHUB_URL = "https://github.com/adriMB200";
 
 const MAX_AUDIO_SIZE_MB = 5;
 const MAX_AUDIO_SIZE_BYTES = MAX_AUDIO_SIZE_MB * 1024 * 1024;
@@ -60,6 +67,125 @@ const brands = [
 
 const engines = ["Gasolina", "Diésel", "Híbrido", "Eléctrico", "GLP"];
 
+const detectableProblems = [
+  {
+    title: "Ruidos de correa o polea",
+    text: "Chirridos agudos al arrancar, acelerar o girar el volante.",
+  },
+  {
+    title: "Frenos que chirrían",
+    text: "Sonidos metálicos, rozamientos o vibraciones al frenar.",
+  },
+  {
+    title: "Golpes de suspensión",
+    text: "Ruidos secos al pasar baches, badenes o carreteras irregulares.",
+  },
+  {
+    title: "Vibraciones al acelerar",
+    text: "Sonidos graves o repetitivos que aumentan con las revoluciones.",
+  },
+  {
+    title: "Silbidos o fugas",
+    text: "Ruidos de aire, escape, turbo o posibles pérdidas de presión.",
+  },
+  {
+    title: "Ruido al arrancar",
+    text: "Traqueteos, golpes o sonidos raros durante los primeros segundos.",
+  },
+];
+
+const trustPoints = [
+  {
+    title: "Orientación clara, no promesas falsas",
+    text: "AutoSonar no sustituye a un mecánico. Te ayuda a entender posibles causas antes de ir al taller.",
+  },
+  {
+    title: "Nivel de urgencia",
+    text: "Cada resultado indica si el problema parece leve, medio o urgente.",
+  },
+  {
+    title: "Calidad del audio",
+    text: "Si el sonido no se escucha bien, la herramienta lo indica en vez de inventar una respuesta.",
+  },
+  {
+    title: "Informe descargable",
+    text: "Puedes guardar el resultado en PDF para enseñarlo en el taller.",
+  },
+];
+
+const pricingPlans = [
+  {
+    name: "Gratis",
+    price: "0 €",
+    description: "Para usuarios que quieren una primera orientación.",
+    features: [
+      "Diagnóstico orientativo",
+      "Subida o grabación de audio",
+      "Resultado básico con urgencia",
+      "Aviso de seguridad",
+    ],
+  },
+  {
+    name: "Pro",
+    price: "Próximamente",
+    description: "Pensado para usuarios con varios vehículos o revisiones frecuentes.",
+    features: [
+      "Historial de diagnósticos",
+      "Informes PDF completos",
+      "Varios vehículos guardados",
+      "Mayor límite de análisis",
+    ],
+  },
+  {
+    name: "Talleres",
+    price: "Próximamente",
+    description: "Para talleres que quieran recibir informes previos de clientes.",
+    features: [
+      "Panel de clientes",
+      "Informes recibidos",
+      "Datos del vehículo estructurados",
+      "Contacto con usuarios interesados",
+    ],
+  },
+];
+
+
+const quickSymptomOptions = [
+  "Aparece en frío",
+  "Aumenta al acelerar",
+  "Suena al frenar",
+  "Suena al girar",
+  "Ruido metálico",
+  "Vibración en marcha",
+  "Pérdida de potencia",
+  "Humo visible",
+  "Olor a quemado",
+  "Testigo encendido",
+];
+
+const diagnosticSteps = [
+  {
+    number: 1,
+    title: "Coche",
+    description: "Marca, modelo, año y motor",
+  },
+  {
+    number: 2,
+    title: "Síntomas",
+    description: "Cuándo aparece el ruido",
+  },
+  {
+    number: 3,
+    title: "Audio",
+    description: "Sube o graba el sonido",
+  },
+  {
+    number: 4,
+    title: "Resultado",
+    description: "Análisis con IA e informe",
+  },
+];
+
 function getSupportedAudioMimeType(file) {
   const name = file.name.toLowerCase();
   const type = file.type;
@@ -68,11 +194,7 @@ function getSupportedAudioMimeType(file) {
     return "audio/wav";
   }
 
-  if (
-    type === "audio/mpeg" ||
-    type === "audio/mp3" ||
-    name.endsWith(".mp3")
-  ) {
+  if (type === "audio/mpeg" || type === "audio/mp3" || name.endsWith(".mp3")) {
     return "audio/mp3";
   }
 
@@ -219,46 +341,24 @@ function SonarSearching() {
       <style>
         {`
           @keyframes autosonarPing {
-            0% {
-              transform: scale(0.25);
-              opacity: 0.9;
-            }
-            75% {
-              opacity: 0.18;
-            }
-            100% {
-              transform: scale(1);
-              opacity: 0;
-            }
+            0% { transform: scale(0.25); opacity: 0.9; }
+            75% { opacity: 0.18; }
+            100% { transform: scale(1); opacity: 0; }
           }
 
           @keyframes autosonarSweep {
-            from {
-              transform: rotate(0deg);
-            }
-            to {
-              transform: rotate(360deg);
-            }
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
           }
 
           @keyframes autosonarDot {
-            0%, 100% {
-              opacity: 0.35;
-              transform: scale(0.8);
-            }
-            50% {
-              opacity: 1;
-              transform: scale(1.15);
-            }
+            0%, 100% { opacity: 0.35; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.15); }
           }
 
           @keyframes autosonarText {
-            0%, 100% {
-              opacity: 0.55;
-            }
-            50% {
-              opacity: 1;
-            }
+            0%, 100% { opacity: 0.55; }
+            50% { opacity: 1; }
           }
         `}
       </style>
@@ -288,11 +388,23 @@ function SonarSearching() {
             }}
           />
 
-          <div className="absolute left-1/2 top-1/2 h-px w-1/2 origin-left bg-gradient-to-r from-emerald-300 via-emerald-300/70 to-transparent" style={{ animation: "autosonarSweep 1.7s linear infinite" }} />
+          <div
+            className="absolute left-1/2 top-1/2 h-px w-1/2 origin-left bg-gradient-to-r from-emerald-300 via-emerald-300/70 to-transparent"
+            style={{ animation: "autosonarSweep 1.7s linear infinite" }}
+          />
 
-          <div className="absolute left-[62%] top-[30%] h-2.5 w-2.5 rounded-full bg-emerald-300 shadow-lg shadow-emerald-300/60" style={{ animation: "autosonarDot 1.4s ease-in-out infinite" }} />
-          <div className="absolute left-[31%] top-[58%] h-2 w-2 rounded-full bg-emerald-200 shadow-lg shadow-emerald-300/60" style={{ animation: "autosonarDot 1.8s ease-in-out infinite" }} />
-          <div className="absolute left-[70%] top-[66%] h-1.5 w-1.5 rounded-full bg-emerald-100 shadow-lg shadow-emerald-300/60" style={{ animation: "autosonarDot 1.2s ease-in-out infinite" }} />
+          <div
+            className="absolute left-[62%] top-[30%] h-2.5 w-2.5 rounded-full bg-emerald-300 shadow-lg shadow-emerald-300/60"
+            style={{ animation: "autosonarDot 1.4s ease-in-out infinite" }}
+          />
+          <div
+            className="absolute left-[31%] top-[58%] h-2 w-2 rounded-full bg-emerald-200 shadow-lg shadow-emerald-300/60"
+            style={{ animation: "autosonarDot 1.8s ease-in-out infinite" }}
+          />
+          <div
+            className="absolute left-[70%] top-[66%] h-1.5 w-1.5 rounded-full bg-emerald-100 shadow-lg shadow-emerald-300/60"
+            style={{ animation: "autosonarDot 1.2s ease-in-out infinite" }}
+          />
 
           <div className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-lg shadow-white/50" />
         </div>
@@ -326,9 +438,7 @@ function CookieBanner() {
     setCookieChoice(choice);
   }
 
-  if (cookieChoice) {
-    return null;
-  }
+  if (cookieChoice) return null;
 
   return (
     <div className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-5xl rounded-[1.5rem] border border-white/10 bg-neutral-950/95 p-5 text-white shadow-2xl shadow-black/50 backdrop-blur">
@@ -390,71 +500,53 @@ function LegalNotice() {
 
         <div className="mt-8 grid gap-5 text-sm leading-7 text-neutral-300">
           <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-6">
-            <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-6">
-              <h3 className="text-lg font-semibold text-white">
-                Autoría, titularidad y derechos de propiedad intelectual
-              </h3>
-
-              <p className="mt-3">
-                <strong>AutoSonar</strong>, ha sido
-                creada por <strong>AdriMB200</strong>
-              </p>
-
-              <p className="mt-3">
-                Salvo que se indique lo contrario, todos los elementos originales de esta
-                web, incluyendo su código propio, diseño, organización de contenidos,
-                textos, selección de funcionalidades, nombre del proyecto, experiencia de
-                usuario y planteamiento de diagnóstico acústico aplicado a vehículos,
-                pertenecen a su autor.
-              </p>
-
-              <p className="mt-3">
-                Queda expresamente prohibida la copia, reproducción, distribución,
-                modificación, publicación, cesión, venta, transformación o explotación
-                comercial no autorizada de AutoSonar o de cualquiera de sus elementos
-                originales.
-              </p>
-
-              <p className="mt-3">
-                El uso de librerías, modelos de inteligencia artificial, iconos, APIs,
-                servicios externos o tecnologías de terceros no implica cesión alguna sobre
-                los elementos originales creados para AutoSonar. Dichos recursos pertenecen
-                a sus respectivos titulares y se utilizan conforme a sus propias licencias
-                o condiciones.
-              </p>
-            </div>
-
-            <div className="rounded-[1.5rem] border border-red-300/20 bg-red-300/10 p-6 text-red-100">
-              <h3 className="text-lg font-semibold text-white">
-                Prohibición de plagio o uso no autorizado
-              </h3>
-
-              <p className="mt-3">
-                AutoSonar es un proyecto original desarrollado como herramienta de análisis
-                acústico orientativo para vehículos. No se autoriza a terceros a copiar la
-                web, replicar su presentación, reutilizar sus textos, apropiarse de su
-                identidad, clonar su estructura visual o presentarla como un desarrollo
-                propio.
-              </p>
-
-              <p className="mt-3">
-                Cualquier uso no autorizado podrá ser considerado una vulneración de los
-                derechos del autor sobre la obra concreta, sin perjuicio de otras acciones
-                que pudieran corresponder conforme a la normativa aplicable.
-              </p>
-            </div>
+            <h3 className="text-lg font-semibold text-white">
+              Autoría, titularidad y derechos de propiedad intelectual
+            </h3>
 
             <p className="mt-3">
-              <strong>AutoSonar</strong>,
-              ha sido creada por <strong>AdriMB200</strong>, https://github.com/adriMB200
+              <strong>AutoSonar</strong> ha sido creada por{" "}
+              <strong>{AUTHOR}</strong>. El repositorio principal del autor está en{" "}
+              <a
+                href={GITHUB_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="text-emerald-300 hover:text-emerald-200"
+              >
+                {GITHUB_URL}
+              </a>.
             </p>
 
             <p className="mt-3">
-              Salvo que se indique lo contrario, los textos, estructura,
-              diseño y elementos propios de AutoSonar pertenecen a su autor. Las
-              librerías, servicios externos, modelos de inteligencia artificial,
-              iconos o tecnologías de terceros pertenecen a sus respectivos
-              titulares.
+              Salvo que se indique lo contrario, todos los elementos originales de esta web,
+              incluyendo su código propio, diseño, organización de contenidos, textos,
+              selección de funcionalidades, nombre del proyecto, experiencia de usuario y
+              planteamiento de diagnóstico acústico aplicado a vehículos, pertenecen a su autor.
+            </p>
+
+            <p className="mt-3">
+              Queda expresamente prohibida la copia, reproducción, distribución, modificación,
+              publicación, cesión, venta, transformación o explotación comercial no autorizada
+              de AutoSonar o de cualquiera de sus elementos originales.
+            </p>
+          </div>
+
+          <div className="rounded-[1.5rem] border border-red-300/20 bg-red-300/10 p-6 text-red-100">
+            <h3 className="text-lg font-semibold text-white">
+              Prohibición de plagio o uso no autorizado
+            </h3>
+
+            <p className="mt-3">
+              AutoSonar es un proyecto original desarrollado como herramienta de análisis
+              acústico orientativo para vehículos. No se autoriza a terceros a copiar la web,
+              replicar su presentación, reutilizar sus textos, apropiarse de su identidad,
+              clonar su estructura visual o presentarla como un desarrollo propio.
+            </p>
+
+            <p className="mt-3">
+              Cualquier uso no autorizado podrá ser considerado una vulneración de los derechos
+              del autor sobre la obra concreta, sin perjuicio de otras acciones que pudieran
+              corresponder conforme a la normativa aplicable.
             </p>
           </div>
 
@@ -464,18 +556,16 @@ function LegalNotice() {
             </h3>
 
             <p className="mt-3">
-              Los resultados generados por AutoSonar son únicamente una
-              orientación basada en el audio enviado, los datos del vehículo y
-              el análisis realizado mediante inteligencia artificial. No deben
-              considerarse un diagnóstico definitivo ni sustituyen la revisión
+              Los resultados generados por AutoSonar son únicamente una orientación basada en el
+              audio enviado, los datos del vehículo y el análisis realizado mediante inteligencia
+              artificial. No deben considerarse un diagnóstico definitivo ni sustituyen la revisión
               de un mecánico profesional.
             </p>
 
             <p className="mt-3">
-              El usuario entiende que un mismo ruido puede tener varias causas,
-              que la calidad del audio puede afectar al resultado y que la IA
-              puede cometer errores, omitir información o interpretar el sonido
-              de forma incorrecta.
+              El usuario entiende que un mismo ruido puede tener varias causas, que la calidad del
+              audio puede afectar al resultado y que la IA puede cometer errores, omitir información
+              o interpretar el sonido de forma incorrecta.
             </p>
           </div>
 
@@ -485,18 +575,16 @@ function LegalNotice() {
             </h3>
 
             <p className="mt-3">
-              El autor de esta web no se hace responsable, en la medida permitida
-              por la ley, de daños, averías, accidentes, pérdidas económicas,
-              decisiones de reparación, uso indebido del vehículo o cualquier
-              consecuencia derivada de seguir, interpretar o aplicar los
+              El autor de esta web no se hace responsable, en la medida permitida por la ley, de
+              daños, averías, accidentes, pérdidas económicas, decisiones de reparación, uso indebido
+              del vehículo o cualquier consecuencia derivada de seguir, interpretar o aplicar los
               diagnósticos generados por AutoSonar.
             </p>
 
             <p className="mt-3">
-              Si el vehículo presenta síntomas graves como pérdida de potencia,
-              humo, olor a quemado, testigos encendidos, fallo de frenos,
-              dirección anómala, golpes fuertes o riesgo para la circulación, el
-              usuario debe dejar de circular si es necesario y consultar con un
+              Si el vehículo presenta síntomas graves como pérdida de potencia, humo, olor a quemado,
+              testigos encendidos, fallo de frenos, dirección anómala, golpes fuertes o riesgo para
+              la circulación, el usuario debe dejar de circular si es necesario y consultar con un
               taller o servicio de asistencia profesional.
             </p>
           </div>
@@ -507,16 +595,15 @@ function LegalNotice() {
             </h3>
 
             <p className="mt-3">
-              Para realizar el análisis, el usuario puede enviar un archivo de
-              audio o grabar sonido desde el micrófono, junto con datos como
-              marca, modelo, año, motor y descripción del síntoma. Esta
-              información se utiliza para generar una respuesta orientativa.
+              Para realizar el análisis, el usuario puede enviar un archivo de audio o grabar sonido
+              desde el micrófono, junto con datos como marca, modelo, año, motor y descripción del
+              síntoma. Esta información se utiliza para generar una respuesta orientativa.
             </p>
 
             <p className="mt-3">
-              No subas audios que contengan conversaciones privadas, datos
-              personales sensibles o información que no quieras compartir con los
-              servicios técnicos necesarios para procesar el diagnóstico.
+              No subas audios que contengan conversaciones privadas, datos personales sensibles o
+              información que no quieras compartir con los servicios técnicos necesarios para procesar
+              el diagnóstico.
             </p>
           </div>
 
@@ -526,16 +613,15 @@ function LegalNotice() {
             </h3>
 
             <p className="mt-3">
-              AutoSonar puede utilizar cookies técnicas o almacenamiento local
-              del navegador para recordar preferencias básicas, como la decisión
-              sobre el aviso de cookies. En esta versión no se utilizan cookies
-              publicitarias ni de seguimiento avanzado.
+              AutoSonar puede utilizar cookies técnicas o almacenamiento local del navegador para
+              recordar preferencias básicas, como la decisión sobre el aviso de cookies. En esta
+              versión no se utilizan cookies publicitarias ni de seguimiento avanzado.
             </p>
 
             <p className="mt-3">
-              Si en el futuro se añaden herramientas de analítica, publicidad o
-              servicios de terceros que utilicen cookies no técnicas, se deberá
-              actualizar este aviso y solicitar el consentimiento correspondiente.
+              Si en el futuro se añaden herramientas de analítica, publicidad o servicios de terceros
+              que utilicen cookies no técnicas, se deberá actualizar este aviso y solicitar el
+              consentimiento correspondiente.
             </p>
           </div>
 
@@ -545,10 +631,9 @@ function LegalNotice() {
             </h3>
 
             <p className="mt-3">
-              Al utilizar AutoSonar, el usuario acepta que la herramienta tiene
-              carácter experimental y orientativo. La decisión final sobre el
-              estado del vehículo, su reparación o su uso en carretera debe ser
-              tomada por el usuario y, cuando corresponda, por un profesional
+              Al utilizar AutoSonar, el usuario acepta que la herramienta tiene carácter experimental y
+              orientativo. La decisión final sobre el estado del vehículo, su reparación o su uso en
+              carretera debe ser tomada por el usuario y, cuando corresponda, por un profesional
               cualificado.
             </p>
 
@@ -564,10 +649,14 @@ function LegalNotice() {
 
 function sanitizePdfText(value) {
   return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/[•]/g, "-")
     .replace(/[“”]/g, '"')
     .replace(/[‘’]/g, "'")
-    .replace(/[–—]/g, "-");
+    .replace(/[–—]/g, "-")
+    .replace(/[©]/g, "(c)")
+    .replace(/[·]/g, "-");
 }
 
 function addWrappedText(doc, text, x, y, maxWidth, lineHeight = 6) {
@@ -649,15 +738,13 @@ function CopyrightFooter() {
       <div className="mx-auto max-w-5xl">
         <p className="text-sm text-neutral-300">
           © {year} AutoSonar · Proyecto, concepto, diseño, textos e implementación
-          desarrollados por <strong className="text-white">AdriMB200</strong>.
-          Todos los derechos reservados.
+          desarrollados por <strong className="text-white">{AUTHOR}</strong>. Todos los derechos reservados.
         </p>
 
         <p className="mt-3 text-xs leading-6 text-neutral-500">
-          Queda prohibida la copia, reproducción, distribución, modificación,
-          publicación o explotación comercial no autorizada de esta web, su código,
-          diseño, textos, estructura, marca, nombre del proyecto o cualquier elemento
-          original propio de AutoSonar.
+          Queda prohibida la copia, reproducción, distribución, modificación, publicación o explotación
+          comercial no autorizada de esta web, su código, diseño, textos, estructura, marca, nombre del
+          proyecto o cualquier elemento original propio de AutoSonar.
         </p>
       </div>
     </footer>
@@ -671,6 +758,8 @@ export default function AutoSonarLanding() {
   const [year, setYear] = useState("2016");
   const [engine, setEngine] = useState("Diésel");
   const [situation, setSituation] = useState("");
+  const [currentStep, setCurrentStep] = useState(1);
+  const [quickSymptoms, setQuickSymptoms] = useState([]);
 
   const [audioFile, setAudioFile] = useState(null);
   const [audioMimeType, setAudioMimeType] = useState("");
@@ -687,6 +776,56 @@ export default function AutoSonarLanding() {
   const carSummary = useMemo(() => {
     return `${brand} ${model || "modelo"} · ${year || "año"} · ${engine}`;
   }, [brand, model, year, engine]);
+
+  const selectedSymptomsText = useMemo(() => {
+    if (quickSymptoms.length === 0) return "";
+    return `Síntomas marcados: ${quickSymptoms.join(", ")}.`;
+  }, [quickSymptoms]);
+
+  const diagnosticContext = useMemo(() => {
+    return [situation.trim(), selectedSymptomsText]
+      .filter(Boolean)
+      .join("\n");
+  }, [situation, selectedSymptomsText]);
+
+  function toggleQuickSymptom(symptom) {
+    setQuickSymptoms((currentSymptoms) => {
+      if (currentSymptoms.includes(symptom)) {
+        return currentSymptoms.filter((item) => item !== symptom);
+      }
+
+      return [...currentSymptoms, symptom];
+    });
+
+    setAiResult(null);
+    setAnalyzeError("");
+  }
+
+  function goToStep(step) {
+    setCurrentStep(step);
+    setAnalyzeError("");
+  }
+
+  function goToNextStep() {
+    setAnalyzeError("");
+
+    if (currentStep === 1 && (!model.trim() || !year.trim())) {
+      setAnalyzeError("Indica al menos el modelo y el año para continuar.");
+      return;
+    }
+
+    if (currentStep === 3 && !audioFile) {
+      setAnalyzeError("Sube un audio o graba el sonido antes de continuar.");
+      return;
+    }
+
+    setCurrentStep((step) => Math.min(step + 1, diagnosticSteps.length));
+  }
+
+  function goToPreviousStep() {
+    setAnalyzeError("");
+    setCurrentStep((step) => Math.max(step - 1, 1));
+  }
 
   function setSelectedAudio(file, mimeType) {
     if (audioPreviewUrl) {
@@ -708,9 +847,7 @@ export default function AutoSonarLanding() {
     const mimeType = getSupportedAudioMimeType(file);
 
     if (!mimeType) {
-      setAnalyzeError(
-        "Formato no válido. Usa MP3, WAV, AAC, OGG, FLAC o AIFF."
-      );
+      setAnalyzeError("Formato no válido. Usa MP3, WAV, AAC, OGG, FLAC o AIFF.");
       setAudioFile(null);
       setAudioMimeType("");
       setAudioPreviewUrl("");
@@ -828,9 +965,7 @@ export default function AutoSonarLanding() {
       }
 
       if (audioFile.size > MAX_AUDIO_SIZE_BYTES) {
-        setAnalyzeError(
-          `El audio pesa demasiado. Usa un archivo de menos de ${MAX_AUDIO_SIZE_MB} MB.`
-        );
+        setAnalyzeError(`El audio pesa demasiado. Usa un archivo de menos de ${MAX_AUDIO_SIZE_MB} MB.`);
         return;
       }
 
@@ -848,7 +983,7 @@ export default function AutoSonarLanding() {
           model,
           year,
           engine,
-          situation,
+          situation: diagnosticContext,
           audioBase64,
           audioMimeType,
         }),
@@ -891,7 +1026,6 @@ export default function AutoSonarLanding() {
 
     let y = 18;
 
-    // Header
     doc.setFillColor(10, 15, 20);
     doc.rect(0, 0, 210, 32, "F");
 
@@ -911,42 +1045,32 @@ export default function AutoSonarLanding() {
     doc.setTextColor(30, 30, 30);
     y = 42;
 
-    // Datos generales
     y = addSectionTitle(doc, "1. Datos del informe", y);
-
     y = addKeyValue(doc, "Fecha:", formattedDate, 15, y);
     y = addKeyValue(doc, "Vehiculo:", carSummary, 15, y);
     y = addKeyValue(doc, "Audio:", audioFile?.name || "No indicado", 15, y);
     y += 3;
 
-    // Datos del vehículo
     y = addSectionTitle(doc, "2. Datos del vehiculo", y);
-
     y = addKeyValue(doc, "Marca:", brand, 15, y);
     y = addKeyValue(doc, "Modelo:", model, 15, y);
     y = addKeyValue(doc, "Anio:", year, 15, y);
     y = addKeyValue(doc, "Motor:", engine, 15, y);
     y += 3;
 
-    // Síntoma
     y = addSectionTitle(doc, "3. Sintoma indicado por el usuario", y);
-
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-
     y = addWrappedText(
       doc,
-      situation || "El usuario no ha indicado una descripcion adicional del ruido.",
+      diagnosticContext || "El usuario no ha indicado una descripcion adicional del ruido.",
       15,
       y,
       180
     );
-
     y += 4;
 
-    // Resultado
     y = addSectionTitle(doc, "4. Resultado del analisis", y);
-
     y = addKeyValue(
       doc,
       "Identificado:",
@@ -954,56 +1078,23 @@ export default function AutoSonarLanding() {
       15,
       y
     );
-
-    y = addKeyValue(
-      doc,
-      "Calidad:",
-      aiResult.calidad_audio || "No indicada",
-      15,
-      y
-    );
-
-    y = addKeyValue(
-      doc,
-      "Urgencia:",
-      aiResult.urgencia_general || "No indicada",
-      15,
-      y
-    );
-
+    y = addKeyValue(doc, "Calidad:", aiResult.calidad_audio || "No indicada", 15, y);
+    y = addKeyValue(doc, "Urgencia:", aiResult.urgencia_general || "No indicada", 15, y);
     y += 2;
 
     doc.setFont("helvetica", "bold");
     doc.text("Resumen:", 15, y);
     y += 6;
-
     doc.setFont("helvetica", "normal");
-    y = addWrappedText(
-      doc,
-      aiResult.resumen || "No se ha generado resumen.",
-      15,
-      y,
-      180
-    );
-
+    y = addWrappedText(doc, aiResult.resumen || "No se ha generado resumen.", 15, y, 180);
     y += 4;
 
-    // Información encontrada
     if (aiResult.informacion_encontrada) {
       y = addSectionTitle(doc, "5. Informacion encontrada", y);
-
-      y = addWrappedText(
-        doc,
-        aiResult.informacion_encontrada,
-        15,
-        y,
-        180
-      );
-
+      y = addWrappedText(doc, aiResult.informacion_encontrada, 15, y, 180);
       y += 4;
     }
 
-    // Posibles causas
     y = addSectionTitle(doc, "6. Posibles causas", y);
 
     if (aiResult.posibles_causas?.length > 0) {
@@ -1015,61 +1106,26 @@ export default function AutoSonarLanding() {
 
         doc.setFont("helvetica", "bold");
         doc.setFontSize(11);
-        doc.text(
-          `${index + 1}. ${sanitizePdfText(cause.causa || "Causa no indicada")}`,
-          15,
-          y
-        );
-
+        doc.text(`${index + 1}. ${sanitizePdfText(cause.causa || "Causa no indicada")}`, 15, y);
         y += 6;
 
         doc.setFont("helvetica", "normal");
         doc.setFontSize(10);
-
-        y = addKeyValue(
-          doc,
-          "Confianza:",
-          `${cause.confianza ?? "No indicada"}%`,
-          18,
-          y
-        );
-
-        y = addKeyValue(
-          doc,
-          "Urgencia:",
-          cause.urgencia || "No indicada",
-          18,
-          y
-        );
+        y = addKeyValue(doc, "Confianza:", `${cause.confianza ?? "No indicada"}%`, 18, y);
+        y = addKeyValue(doc, "Urgencia:", cause.urgencia || "No indicada", 18, y);
 
         doc.setFont("helvetica", "bold");
         doc.text("Explicacion:", 18, y);
         y += 6;
-
         doc.setFont("helvetica", "normal");
-        y = addWrappedText(
-          doc,
-          cause.explicacion || "No indicada.",
-          18,
-          y,
-          174
-        );
-
+        y = addWrappedText(doc, cause.explicacion || "No indicada.", 18, y, 174);
         y += 2;
 
         doc.setFont("helvetica", "bold");
         doc.text("Que hacer:", 18, y);
         y += 6;
-
         doc.setFont("helvetica", "normal");
-        y = addWrappedText(
-          doc,
-          cause.que_hacer || "No indicado.",
-          18,
-          y,
-          174
-        );
-
+        y = addWrappedText(doc, cause.que_hacer || "No indicado.", 18, y, 174);
         y += 6;
       });
     } else {
@@ -1080,24 +1136,18 @@ export default function AutoSonarLanding() {
         y,
         180
       );
-
       y += 4;
     }
 
-    // Preguntas para afinar
     if (aiResult.preguntas_para_afinar?.length > 0) {
       y = addSectionTitle(doc, "7. Preguntas para afinar el diagnostico", y);
-
       aiResult.preguntas_para_afinar.forEach((question, index) => {
         y = addWrappedText(doc, `${index + 1}. ${question}`, 15, y, 180);
       });
-
       y += 4;
     }
 
-    // Recomendación
     y = addSectionTitle(doc, "8. Recomendacion", y);
-
     y = addWrappedText(
       doc,
       aiResult.recomendacion || "No se ha generado una recomendacion.",
@@ -1105,12 +1155,9 @@ export default function AutoSonarLanding() {
       y,
       180
     );
-
     y += 4;
 
-    // Advertencia
     y = addSectionTitle(doc, "9. Advertencia y exencion de responsabilidad", y);
-
     y = addWrappedText(
       doc,
       aiResult.advertencia ||
@@ -1119,7 +1166,6 @@ export default function AutoSonarLanding() {
       y,
       180
     );
-
     y += 4;
 
     y = addWrappedText(
@@ -1129,15 +1175,12 @@ export default function AutoSonarLanding() {
       y,
       180
     );
-
     y += 4;
 
-    // Copyright
     y = addSectionTitle(doc, "10. Autor y copyright", y);
-
     y = addWrappedText(
       doc,
-      "AutoSonar es un proyecto creado por AdriMB200. Proyecto, concepto, diseno, textos e implementacion desarrollados como herramienta experimental de diagnostico acustico orientativo para vehiculos. Todos los derechos reservados.",
+      `AutoSonar es un proyecto creado por ${AUTHOR}. Proyecto, concepto, diseno, textos e implementacion desarrollados como herramienta experimental de diagnostico acustico orientativo para vehiculos. Todos los derechos reservados.`,
       15,
       y,
       180
@@ -1156,6 +1199,7 @@ export default function AutoSonarLanding() {
   return (
     <main className="min-h-screen bg-neutral-950 text-white">
       <CookieBanner />
+
       <section className="relative overflow-hidden border-b border-white/10">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.28),transparent_35%),radial-gradient(circle_at_80%_20%,rgba(34,197,94,0.16),transparent_30%)]" />
 
@@ -1166,14 +1210,18 @@ export default function AutoSonarLanding() {
             transition={{ duration: 0.5 }}
             className="flex flex-col justify-center"
           >
-            <h1 className="max-w-3xl text-5xl font-semibold tracking-tight text-white md:text-7xl">
-              Analiza con IA el sonido de tu coche y orienta su diagnóstico
+            <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-neutral-200 backdrop-blur">
+              <Volume2 className="h-4 w-4 text-emerald-300" />
+              Diagnóstico acústico inteligente para coches
+            </div>
+
+            <h1 className="max-w-3xl text-5xl font-semibold tracking-tight text-white md:text-6xl">
+              Detecta posibles problemas de tu coche escuchando su sonido
             </h1>
 
             <p className="mt-6 max-w-2xl text-lg leading-8 text-neutral-300">
-              Sube un audio o graba desde el micrófono. La herramienta analiza
-              el patrón del sonido y cruza la información con marca, modelo, año
-              y motor para orientar un posible diagnóstico.
+              Graba o sube un audio del motor, frenos, suspensión o dirección. AutoSonar
+              analiza el sonido con IA y te da una orientación clara antes de ir al taller.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -1181,22 +1229,31 @@ export default function AutoSonarLanding() {
                 href="#diagnostico"
                 className="inline-flex items-center justify-center rounded-2xl bg-white px-5 py-3 font-medium text-neutral-950 shadow-lg shadow-white/10 transition hover:bg-neutral-200"
               >
-                Probar diagnóstico con IA
+                Analizar mi coche ahora
                 <ChevronRight className="ml-2 h-4 w-4" />
               </a>
 
               <a
-                href="#como-funciona"
+                href="#detecta"
                 className="inline-flex items-center justify-center rounded-2xl border border-white/15 px-5 py-3 font-medium text-white transition hover:bg-white/10"
               >
-                Ver cómo funciona
+                Qué puede detectar
               </a>
             </div>
 
-            <p className="mt-5 text-sm text-neutral-400">
-              MVP real: primero análisis orientativo con Gemini, después modelo
-              especializado entrenado con audios de coches.
-            </p>
+            <div className="mt-8 grid max-w-2xl gap-3 sm:grid-cols-3">
+              {[
+                { icon: Clock, value: "Segundos", label: "respuesta rápida" },
+                { icon: FileText, value: "PDF", label: "informe descargable" },
+                { icon: ShieldCheck, value: "Seguro", label: "clave protegida" },
+              ].map((item) => (
+                <div key={item.label} className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                  <item.icon className="h-5 w-5 text-emerald-300" />
+                  <p className="mt-3 font-semibold text-white">{item.value}</p>
+                  <p className="mt-1 text-sm text-neutral-400">{item.label}</p>
+                </div>
+              ))}
+            </div>
           </motion.div>
 
           <motion.div
@@ -1264,10 +1321,80 @@ export default function AutoSonarLanding() {
         </div>
       </section>
 
-      <section
-        id="como-funciona"
-        className="mx-auto max-w-7xl px-6 py-20 lg:px-8"
-      >
+      <section id="detecta" className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
+        <div className="max-w-3xl">
+          <p className="text-sm font-medium uppercase tracking-[0.2em] text-emerald-300">
+            Qué puede detectar
+          </p>
+
+          <h2 className="mt-3 text-3xl font-semibold md:text-5xl">
+            Ruidos comunes que muchos conductores pasan por alto.
+          </h2>
+
+          <p className="mt-5 leading-8 text-neutral-300">
+            AutoSonar está pensado para ayudar con sonidos habituales del coche:
+            chirridos, golpes, vibraciones, silbidos o traqueteos. No confirma una
+            avería al 100%, pero puede darte una primera pista útil.
+          </p>
+        </div>
+
+        <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {detectableProblems.map((item) => (
+            <div
+              key={item.title}
+              className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-6 transition hover:border-emerald-300/30 hover:bg-white/[0.07]"
+            >
+              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-300/10 text-emerald-300">
+                <Wrench className="h-5 w-5" />
+              </div>
+
+              <h3 className="text-xl font-semibold text-white">{item.title}</h3>
+              <p className="mt-3 leading-7 text-neutral-300">{item.text}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="border-y border-white/10 bg-white/[0.03]">
+        <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
+          <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
+            <div>
+              <p className="text-sm font-medium uppercase tracking-[0.2em] text-blue-300">
+                Confianza y transparencia
+              </p>
+
+              <h2 className="mt-3 text-3xl font-semibold md:text-5xl">
+                Una ayuda previa al taller, no una promesa milagrosa.
+              </h2>
+
+              <p className="mt-5 leading-8 text-neutral-300">
+                El usuario no necesita una respuesta exagerada. Necesita saber si el
+                ruido puede ser leve, si conviene revisarlo pronto o si debería dejar
+                de circular. Por eso AutoSonar muestra resultados prudentes y claros.
+              </p>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              {trustPoints.map((item) => (
+                <div
+                  key={item.title}
+                  className="rounded-[1.5rem] border border-white/10 bg-neutral-950 p-6"
+                >
+                  <CheckCircle2 className="h-6 w-6 text-emerald-300" />
+
+                  <h3 className="mt-4 text-lg font-semibold text-white">
+                    {item.title}
+                  </h3>
+
+                  <p className="mt-3 leading-7 text-neutral-300">{item.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="como-funciona" className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
         <div className="max-w-2xl">
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-blue-300">
             Funcionamiento
@@ -1279,8 +1406,7 @@ export default function AutoSonarLanding() {
 
           <p className="mt-5 text-neutral-300">
             Un mismo ruido no significa lo mismo en un diésel antiguo que en un
-            híbrido reciente. Por eso el sistema no solo escucha: también
-            pregunta por el coche.
+            híbrido reciente. Por eso el sistema no solo escucha: también pregunta por el coche.
           </p>
         </div>
 
@@ -1297,7 +1423,7 @@ export default function AutoSonarLanding() {
               text: "Marca, modelo, año, motor, kilometraje y situación del ruido ayudan a reducir diagnósticos poco probables.",
             },
             {
-              icon: Wrench,
+              icon: Search,
               title: "3. Recibe una orientación",
               text: "La IA devuelve posibles causas, urgencia, preguntas para afinar y pasos razonables antes de ir al taller.",
             },
@@ -1311,7 +1437,6 @@ export default function AutoSonarLanding() {
               </div>
 
               <h3 className="text-xl font-semibold">{step.title}</h3>
-
               <p className="mt-3 leading-7 text-neutral-300">{step.text}</p>
             </div>
           ))}
@@ -1322,222 +1447,485 @@ export default function AutoSonarLanding() {
         <div className="mx-auto grid max-w-7xl gap-8 px-6 py-20 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
           <div>
             <p className="text-sm font-medium uppercase tracking-[0.2em] text-emerald-300">
-              Diagnóstico con IA
+              Diagnóstico guiado
             </p>
 
             <h2 className="mt-3 text-3xl font-semibold md:text-5xl">
-              Prueba de diagnóstico
+              Analiza tu coche paso a paso.
             </h2>
 
             <p className="mt-5 leading-8 text-neutral-300">
-              Esta primera versión usa Gemini para escuchar el audio y razonar
-              con los datos del coche. Puede orientar bastante, aunque no debe
-              tratarse como una confirmación definitiva.
+              Hemos simplificado el proceso para que cualquier conductor pueda usarlo: primero
+              identificas el vehículo, después marcas los síntomas, subes o grabas el audio y
+              finalmente recibes una orientación clara con IA.
             </p>
 
             <div className="mt-8 rounded-[1.5rem] border border-amber-300/20 bg-amber-300/10 p-5 text-amber-100">
               <div className="flex gap-3">
                 <ShieldAlert className="mt-1 h-5 w-5 shrink-0" />
                 <p className="text-sm leading-6">
-                  La herramienta no sustituye a un mecánico. Si hay humo,
-                  pérdida de potencia, olor a quemado, fallo de frenos,
-                  dirección rara o testigos encendidos, conviene parar y revisar
-                  el coche cuanto antes.
+                  AutoSonar no sustituye a un mecánico. Si hay humo, pérdida de potencia,
+                  olor a quemado, fallo de frenos, dirección rara o testigos encendidos,
+                  conviene parar y revisar el coche cuanto antes.
                 </p>
+              </div>
+            </div>
+
+            <div className="mt-6 grid gap-3 rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5 text-sm text-neutral-300">
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="h-5 w-5 text-emerald-300" />
+                <span>Flujo más claro para usuarios nuevos.</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="h-5 w-5 text-emerald-300" />
+                <span>Más contexto para que la IA no responda a ciegas.</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="h-5 w-5 text-emerald-300" />
+                <span>Resultado descargable en PDF para llevar al taller.</span>
               </div>
             </div>
           </div>
 
           <div className="rounded-[2rem] border border-white/10 bg-neutral-950 p-5 shadow-xl">
-            <div className="grid gap-4 md:grid-cols-2">
-              <button
-                type="button"
-                onClick={() => setMode("upload")}
-                className={`rounded-2xl border p-5 text-left transition ${mode === "upload"
-                  ? "border-white bg-white text-neutral-950"
-                  : "border-white/10 bg-white/[0.04] text-white hover:bg-white/10"
-                  }`}
-              >
-                <Upload className="mb-4 h-6 w-6" />
-                <p className="font-semibold">Subir audio</p>
-                <p
-                  className={`mt-1 text-sm ${mode === "upload" ? "text-neutral-600" : "text-neutral-400"
-                    }`}
-                >
-                  MP3, WAV, AAC, OGG, FLAC o AIFF
-                </p>
-              </button>
+            <div className="grid gap-3 md:grid-cols-4">
+              {diagnosticSteps.map((step) => {
+                const isActive = currentStep === step.number;
+                const isDone = currentStep > step.number;
 
-              <button
-                type="button"
-                onClick={() => setMode("record")}
-                className={`rounded-2xl border p-5 text-left transition ${mode === "record"
-                  ? "border-white bg-white text-neutral-950"
-                  : "border-white/10 bg-white/[0.04] text-white hover:bg-white/10"
-                  }`}
-              >
-                <Mic className="mb-4 h-6 w-6" />
-                <p className="font-semibold">Usar micrófono</p>
-                <p
-                  className={`mt-1 text-sm ${mode === "record" ? "text-neutral-600" : "text-neutral-400"
-                    }`}
-                >
-                  Grabación convertida a WAV
-                </p>
-              </button>
+                return (
+                  <button
+                    key={step.number}
+                    type="button"
+                    onClick={() => goToStep(step.number)}
+                    className={`rounded-2xl border p-4 text-left transition ${isActive
+                      ? "border-emerald-300/60 bg-emerald-300/10"
+                      : isDone
+                        ? "border-emerald-300/20 bg-white/[0.04]"
+                        : "border-white/10 bg-white/[0.02] hover:bg-white/[0.05]"
+                      }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${isActive || isDone
+                          ? "bg-emerald-300 text-neutral-950"
+                          : "bg-white/10 text-neutral-300"
+                          }`}
+                      >
+                        {isDone ? "✓" : step.number}
+                      </span>
+                      <span className="font-semibold text-white">{step.title}</span>
+                    </div>
+                    <p className="mt-2 text-xs leading-5 text-neutral-400">{step.description}</p>
+                  </button>
+                );
+              })}
             </div>
 
-            {mode === "upload" && (
-              <label className="mt-5 block cursor-pointer rounded-2xl border border-dashed border-white/20 bg-white/[0.03] p-6 text-center transition hover:bg-white/[0.06]">
-                <Volume2 className="mx-auto h-8 w-8 text-neutral-300" />
+            <div className="mt-6 rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-5">
+              {currentStep === 1 && (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-2xl bg-white p-3 text-neutral-950">
+                      <Car className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold">Identifica tu vehículo</h3>
+                      <p className="mt-1 text-sm leading-6 text-neutral-400">
+                        Cuanto más concreto seas, mejor podrá razonar la IA. No es lo mismo un
+                        diésel antiguo que un híbrido reciente.
+                      </p>
+                    </div>
+                  </div>
 
-                <p className="mt-3 font-medium">
-                  {audioFile ? audioFile.name : "Sube un audio del motor"}
-                </p>
+                  <div className="mt-6 grid gap-4 md:grid-cols-2">
+                    <label className="grid gap-2 text-sm">
+                      <span className="text-neutral-300">Marca</span>
+                      <select
+                        value={brand}
+                        onChange={(event) => {
+                          setBrand(event.target.value);
+                          setAiResult(null);
+                        }}
+                        className="rounded-xl border border-white/10 bg-neutral-900 px-4 py-3 text-white outline-none focus:border-white/40"
+                      >
+                        {brands.map((item) => (
+                          <option key={item}>{item}</option>
+                        ))}
+                      </select>
+                    </label>
 
-                <p className="mt-1 text-sm text-neutral-400">
-                  Ideal: 10 a 20 segundos, sin música ni viento fuerte. Máximo{" "}
-                  {MAX_AUDIO_SIZE_MB} MB.
-                </p>
+                    <label className="grid gap-2 text-sm">
+                      <span className="text-neutral-300">Modelo</span>
+                      <input
+                        value={model}
+                        onChange={(event) => {
+                          setModel(event.target.value);
+                          setAiResult(null);
+                        }}
+                        className="rounded-xl border border-white/10 bg-neutral-900 px-4 py-3 text-white outline-none focus:border-white/40"
+                        placeholder="Ej. Golf"
+                      />
+                    </label>
 
-                <input
-                  type="file"
-                  accept=".mp3,.wav,.aac,.ogg,.flac,.aiff,.aif,audio/mpeg,audio/mp3,audio/wav,audio/aac,audio/ogg,audio/flac,audio/aiff"
-                  onChange={handleAudioFileChange}
-                  className="hidden"
-                />
-              </label>
-            )}
+                    <label className="grid gap-2 text-sm">
+                      <span className="text-neutral-300">Año</span>
+                      <input
+                        value={year}
+                        onChange={(event) => {
+                          setYear(event.target.value);
+                          setAiResult(null);
+                        }}
+                        className="rounded-xl border border-white/10 bg-neutral-900 px-4 py-3 text-white outline-none focus:border-white/40"
+                        placeholder="Ej. 2016"
+                      />
+                    </label>
 
-            {mode === "record" && (
-              <div className="mt-5 rounded-2xl border border-dashed border-white/20 bg-white/[0.03] p-6 text-center">
-                <Mic className="mx-auto h-8 w-8 text-neutral-300" />
-
-                <p className="mt-3 font-medium">
-                  {isRecording
-                    ? "Grabando audio del coche..."
-                    : audioFile
-                      ? audioFile.name
-                      : "Graba el sonido del motor"}
-                </p>
-
-                <p className="mt-1 text-sm text-neutral-400">
-                  Graba unos 10-20 segundos. Acerca el móvil a la zona del ruido
-                  sin tocar piezas calientes o móviles.
-                </p>
-
-                <div className="mt-4 flex justify-center">
-                  {!isRecording ? (
-                    <button
-                      type="button"
-                      onClick={startRecording}
-                      className="inline-flex items-center justify-center rounded-2xl bg-white px-5 py-3 font-medium text-neutral-950 transition hover:bg-neutral-200"
-                    >
-                      <Mic className="mr-2 h-4 w-4" />
-                      Empezar grabación
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={stopRecording}
-                      className="inline-flex items-center justify-center rounded-2xl bg-red-400 px-5 py-3 font-medium text-neutral-950 transition hover:bg-red-300"
-                    >
-                      <Square className="mr-2 h-4 w-4" />
-                      Detener grabación
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {audioPreviewUrl && (
-              <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                <p className="mb-2 text-sm text-neutral-300">Audio cargado:</p>
-                <audio controls src={audioPreviewUrl} className="w-full" />
-              </div>
-            )}
-
-            <div className="mt-6 grid gap-4 md:grid-cols-2">
-              <label className="grid gap-2 text-sm">
-                <span className="text-neutral-300">Marca</span>
-                <select
-                  value={brand}
-                  onChange={(event) => setBrand(event.target.value)}
-                  className="rounded-xl border border-white/10 bg-neutral-900 px-4 py-3 text-white outline-none focus:border-white/40"
-                >
-                  {brands.map((item) => (
-                    <option key={item}>{item}</option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="grid gap-2 text-sm">
-                <span className="text-neutral-300">Modelo</span>
-                <input
-                  value={model}
-                  onChange={(event) => setModel(event.target.value)}
-                  className="rounded-xl border border-white/10 bg-neutral-900 px-4 py-3 text-white outline-none focus:border-white/40"
-                  placeholder="Ej. Golf"
-                />
-              </label>
-
-              <label className="grid gap-2 text-sm">
-                <span className="text-neutral-300">Año</span>
-                <input
-                  value={year}
-                  onChange={(event) => setYear(event.target.value)}
-                  className="rounded-xl border border-white/10 bg-neutral-900 px-4 py-3 text-white outline-none focus:border-white/40"
-                  placeholder="Ej. 2016"
-                />
-              </label>
-
-              <label className="grid gap-2 text-sm">
-                <span className="text-neutral-300">Motor</span>
-                <select
-                  value={engine}
-                  onChange={(event) => setEngine(event.target.value)}
-                  className="rounded-xl border border-white/10 bg-neutral-900 px-4 py-3 text-white outline-none focus:border-white/40"
-                >
-                  {engines.map((item) => (
-                    <option key={item}>{item}</option>
-                  ))}
-                </select>
-              </label>
-            </div>
-
-            <label className="mt-4 grid gap-2 text-sm">
-              <span className="text-neutral-300">
-                ¿Cuándo aparece el ruido?
-              </span>
-
-              <textarea
-                value={situation}
-                onChange={(event) => setSituation(event.target.value)}
-                className="min-h-24 rounded-xl border border-white/10 bg-neutral-900 px-4 py-3 text-white outline-none focus:border-white/40"
-                placeholder="Ej. Suena en frío durante 30 segundos, sobre todo al arrancar y al girar el volante."
-              />
-            </label>
-
-            <button
-              type="button"
-              onClick={analyzeWithAI}
-              disabled={isAnalyzing || isRecording}
-              className="mt-5 flex w-full items-center justify-center rounded-2xl bg-emerald-400 px-5 py-4 font-semibold text-neutral-950 transition hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isAnalyzing ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Analizando audio...
-                </>
-              ) : (
-                <>
-                  Analizar sonido con IA
-                  <Sparkles className="ml-2 h-5 w-5" />
-                </>
+                    <label className="grid gap-2 text-sm">
+                      <span className="text-neutral-300">Motor</span>
+                      <select
+                        value={engine}
+                        onChange={(event) => {
+                          setEngine(event.target.value);
+                          setAiResult(null);
+                        }}
+                        className="rounded-xl border border-white/10 bg-neutral-900 px-4 py-3 text-white outline-none focus:border-white/40"
+                      >
+                        {engines.map((item) => (
+                          <option key={item}>{item}</option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                </motion.div>
               )}
-            </button>
 
-            {isAnalyzing && <SonarSearching />}
+              {currentStep === 2 && (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-2xl bg-white p-3 text-neutral-950">
+                      <Search className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold">Cuéntanos cuándo aparece el ruido</h3>
+                      <p className="mt-1 text-sm leading-6 text-neutral-400">
+                        Marca síntomas rápidos y añade una descripción. Este contexto ayuda a evitar
+                        diagnósticos demasiado genéricos.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 grid gap-2 sm:grid-cols-2">
+                    {quickSymptomOptions.map((symptom) => {
+                      const selected = quickSymptoms.includes(symptom);
+
+                      return (
+                        <button
+                          key={symptom}
+                          type="button"
+                          onClick={() => toggleQuickSymptom(symptom)}
+                          className={`rounded-2xl border px-4 py-3 text-left text-sm transition ${selected
+                            ? "border-emerald-300/60 bg-emerald-300/10 text-emerald-100"
+                            : "border-white/10 bg-neutral-900 text-neutral-300 hover:bg-white/[0.06]"
+                            }`}
+                        >
+                          <span className="mr-2">{selected ? "✓" : "+"}</span>
+                          {symptom}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <label className="mt-5 grid gap-2 text-sm">
+                    <span className="text-neutral-300">Descripción libre</span>
+                    <textarea
+                      value={situation}
+                      onChange={(event) => {
+                        setSituation(event.target.value);
+                        setAiResult(null);
+                      }}
+                      className="min-h-28 rounded-xl border border-white/10 bg-neutral-900 px-4 py-3 text-white outline-none focus:border-white/40"
+                      placeholder="Ej. Suena en frío durante 30 segundos, sobre todo al arrancar y al girar el volante."
+                    />
+                  </label>
+
+                  {diagnosticContext && (
+                    <div className="mt-4 rounded-2xl border border-emerald-300/20 bg-emerald-300/10 p-4 text-sm leading-6 text-emerald-100">
+                      <p className="font-semibold">Contexto que recibirá la IA:</p>
+                      <p className="mt-1 whitespace-pre-line text-emerald-100/80">{diagnosticContext}</p>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
+              {currentStep === 3 && (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-2xl bg-white p-3 text-neutral-950">
+                      <Volume2 className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold">Sube o graba el sonido</h3>
+                      <p className="mt-1 text-sm leading-6 text-neutral-400">
+                        Lo ideal es un audio de 10 a 20 segundos, sin música, sin voces y con el móvil
+                        cerca de la zona del ruido.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 grid gap-4 md:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => setMode("upload")}
+                      className={`rounded-2xl border p-5 text-left transition ${mode === "upload"
+                        ? "border-white bg-white text-neutral-950"
+                        : "border-white/10 bg-white/[0.04] text-white hover:bg-white/10"
+                        }`}
+                    >
+                      <Upload className="mb-4 h-6 w-6" />
+                      <p className="font-semibold">Subir audio</p>
+                      <p className={`mt-1 text-sm ${mode === "upload" ? "text-neutral-600" : "text-neutral-400"}`}>
+                        MP3, WAV, AAC, OGG, FLAC o AIFF
+                      </p>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setMode("record")}
+                      className={`rounded-2xl border p-5 text-left transition ${mode === "record"
+                        ? "border-white bg-white text-neutral-950"
+                        : "border-white/10 bg-white/[0.04] text-white hover:bg-white/10"
+                        }`}
+                    >
+                      <Mic className="mb-4 h-6 w-6" />
+                      <p className="font-semibold">Usar micrófono</p>
+                      <p className={`mt-1 text-sm ${mode === "record" ? "text-neutral-600" : "text-neutral-400"}`}>
+                        Grabación convertida a WAV
+                      </p>
+                    </button>
+                  </div>
+
+                  {mode === "upload" && (
+                    <label className="mt-5 block cursor-pointer rounded-2xl border border-dashed border-white/20 bg-white/[0.03] p-6 text-center transition hover:bg-white/[0.06]">
+                      <Volume2 className="mx-auto h-8 w-8 text-neutral-300" />
+
+                      <p className="mt-3 font-medium">
+                        {audioFile ? audioFile.name : "Sube un audio del motor"}
+                      </p>
+
+                      <p className="mt-1 text-sm text-neutral-400">
+                        Máximo {MAX_AUDIO_SIZE_MB} MB. Si puedes, graba en un entorno tranquilo.
+                      </p>
+
+                      <input
+                        type="file"
+                        accept=".mp3,.wav,.aac,.ogg,.flac,.aiff,.aif,audio/mpeg,audio/mp3,audio/wav,audio/aac,audio/ogg,audio/flac,audio/aiff"
+                        onChange={handleAudioFileChange}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+
+                  {mode === "record" && (
+                    <div className="mt-5 rounded-2xl border border-dashed border-white/20 bg-white/[0.03] p-6 text-center">
+                      <Mic className="mx-auto h-8 w-8 text-neutral-300" />
+
+                      <p className="mt-3 font-medium">
+                        {isRecording
+                          ? "Grabando audio del coche..."
+                          : audioFile
+                            ? audioFile.name
+                            : "Graba el sonido del motor"}
+                      </p>
+
+                      <p className="mt-1 text-sm text-neutral-400">
+                        Acerca el móvil a la zona del ruido sin tocar piezas calientes o móviles.
+                      </p>
+
+                      <div className="mt-4 flex justify-center">
+                        {!isRecording ? (
+                          <button
+                            type="button"
+                            onClick={startRecording}
+                            className="inline-flex items-center justify-center rounded-2xl bg-white px-5 py-3 font-medium text-neutral-950 transition hover:bg-neutral-200"
+                          >
+                            <Mic className="mr-2 h-4 w-4" />
+                            Empezar grabación
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={stopRecording}
+                            className="inline-flex items-center justify-center rounded-2xl bg-red-400 px-5 py-3 font-medium text-neutral-950 transition hover:bg-red-300"
+                          >
+                            <Square className="mr-2 h-4 w-4" />
+                            Detener grabación
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {audioPreviewUrl && (
+                    <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                      <p className="mb-2 text-sm text-neutral-300">Audio cargado:</p>
+                      <audio controls src={audioPreviewUrl} className="w-full" />
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
+              {currentStep === 4 && (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-2xl bg-white p-3 text-neutral-950">
+                      <Sparkles className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold">Revisa y analiza</h3>
+                      <p className="mt-1 text-sm leading-6 text-neutral-400">
+                        Comprueba los datos antes de enviar el audio. El resultado será orientativo
+                        y podrás descargarlo en PDF.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 grid gap-3 rounded-2xl border border-white/10 bg-neutral-900 p-4 text-sm text-neutral-300">
+                    <div className="flex flex-wrap justify-between gap-2">
+                      <span className="text-neutral-400">Vehículo</span>
+                      <strong className="text-white">{carSummary}</strong>
+                    </div>
+                    <div className="flex flex-wrap justify-between gap-2">
+                      <span className="text-neutral-400">Audio</span>
+                      <strong className="text-white">{audioFile?.name || "No cargado"}</strong>
+                    </div>
+                    <div>
+                      <span className="text-neutral-400">Síntomas</span>
+                      <p className="mt-1 whitespace-pre-line text-white">
+                        {diagnosticContext || "No se han indicado síntomas adicionales."}
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={analyzeWithAI}
+                    disabled={isAnalyzing || isRecording || !audioFile}
+                    className="mt-5 flex w-full items-center justify-center rounded-2xl bg-emerald-400 px-5 py-4 font-semibold text-neutral-950 transition hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {isAnalyzing ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Analizando audio...
+                      </>
+                    ) : (
+                      <>
+                        Analizar sonido con IA
+                        <Sparkles className="ml-2 h-5 w-5" />
+                      </>
+                    )}
+                  </button>
+
+                  {!audioFile && (
+                    <p className="mt-3 text-sm text-amber-200">
+                      Todavía no has cargado ningún audio. Vuelve al paso 3 para subirlo o grabarlo.
+                    </p>
+                  )}
+
+                  {isAnalyzing && <SonarSearching />}
+
+                  {aiResult && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-6"
+                    >
+                      <div className="mb-4 flex items-center gap-2 text-sm text-neutral-300">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-300" />
+                        Resultado IA para {carSummary}
+                      </div>
+
+                      <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <h3 className="font-semibold">Resumen</h3>
+
+                          <span
+                            className={`rounded-full px-3 py-1 text-xs font-medium ${urgencyBadgeClass(
+                              aiResult.urgencia_general
+                            )}`}
+                          >
+                            Urgencia: {aiResult.urgencia_general || "sin valorar"}
+                          </span>
+                        </div>
+
+                        <p className="mt-2 text-sm leading-6 text-neutral-300">
+                          {aiResult.resumen}
+                        </p>
+
+                        <p className="mt-3 text-xs text-neutral-400">
+                          Calidad del audio: {aiResult.calidad_audio || "no indicada"}
+                        </p>
+                      </div>
+
+                      <div className="mt-3 grid gap-3">
+                        {aiResult.posibles_causas?.map((result, index) => (
+                          <div
+                            key={`${result.causa}-${index}`}
+                            className="rounded-2xl border border-white/10 bg-white/[0.04] p-4"
+                          >
+                            <div className="flex flex-wrap items-center justify-between gap-3">
+                              <h3 className="font-semibold">{result.causa}</h3>
+
+                              <span
+                                className={`rounded-full px-3 py-1 text-xs font-medium ${urgencyBadgeClass(
+                                  result.urgencia
+                                )}`}
+                              >
+                                {result.confianza}% confianza · {result.urgencia}
+                              </span>
+                            </div>
+
+                            <p className="mt-2 text-sm leading-6 text-neutral-300">
+                              {result.explicacion}
+                            </p>
+
+                            <p className="mt-3 text-sm leading-6 text-emerald-200">
+                              Qué hacer: {result.que_hacer}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+
+                      {aiResult.preguntas_para_afinar?.length > 0 && (
+                        <div className="mt-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                          <h3 className="font-semibold">Preguntas para afinar</h3>
+
+                          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-neutral-300">
+                            {aiResult.preguntas_para_afinar.map((question, index) => (
+                              <li key={index}>{question}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      <div className="mt-3 rounded-2xl border border-amber-300/20 bg-amber-300/10 p-4 text-sm text-amber-100">
+                        <p>{aiResult.recomendacion}</p>
+                        <p className="mt-2 opacity-90">{aiResult.advertencia}</p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={downloadDiagnosisPdf}
+                        className="mt-4 flex w-full items-center justify-center rounded-2xl border border-white/15 bg-white px-5 py-4 font-semibold text-neutral-950 transition hover:bg-neutral-200"
+                      >
+                        <Download className="mr-2 h-5 w-5" />
+                        Descargar informe PDF
+                      </button>
+                    </motion.div>
+                  )}
+                </motion.div>
+              )}
+            </div>
 
             {analyzeError && (
               <div className="mt-4 rounded-2xl border border-red-300/20 bg-red-300/10 p-4 text-sm text-red-100">
@@ -1545,94 +1933,37 @@ export default function AutoSonarLanding() {
               </div>
             )}
 
-            {aiResult && (
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-6"
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-between">
+              <button
+                type="button"
+                onClick={goToPreviousStep}
+                disabled={currentStep === 1 || isAnalyzing}
+                className="inline-flex items-center justify-center rounded-2xl border border-white/15 px-5 py-3 font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                <div className="mb-4 flex items-center gap-2 text-sm text-neutral-300">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-300" />
-                  Resultado IA para {carSummary}
-                </div>
+                Atrás
+              </button>
 
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <h3 className="font-semibold">Resumen</h3>
-
-                    <span
-                      className={`rounded-full px-3 py-1 text-xs font-medium ${urgencyBadgeClass(
-                        aiResult.urgencia_general
-                      )}`}
-                    >
-                      Urgencia: {aiResult.urgencia_general || "sin valorar"}
-                    </span>
-                  </div>
-
-                  <p className="mt-2 text-sm leading-6 text-neutral-300">
-                    {aiResult.resumen}
-                  </p>
-
-                  <p className="mt-3 text-xs text-neutral-400">
-                    Calidad del audio: {aiResult.calidad_audio || "no indicada"}
-                  </p>
-                </div>
-
-                <div className="mt-3 grid gap-3">
-                  {aiResult.posibles_causas?.map((result, index) => (
-                    <div
-                      key={`${result.causa}-${index}`}
-                      className="rounded-2xl border border-white/10 bg-white/[0.04] p-4"
-                    >
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <h3 className="font-semibold">{result.causa}</h3>
-
-                        <span
-                          className={`rounded-full px-3 py-1 text-xs font-medium ${urgencyBadgeClass(
-                            result.urgencia
-                          )}`}
-                        >
-                          {result.confianza}% confianza · {result.urgencia}
-                        </span>
-                      </div>
-
-                      <p className="mt-2 text-sm leading-6 text-neutral-300">
-                        {result.explicacion}
-                      </p>
-
-                      <p className="mt-3 text-sm leading-6 text-emerald-200">
-                        Qué hacer: {result.que_hacer}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-
-                {aiResult.preguntas_para_afinar?.length > 0 && (
-                  <div className="mt-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                    <h3 className="font-semibold">Preguntas para afinar</h3>
-
-                    <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-neutral-300">
-                      {aiResult.preguntas_para_afinar.map((question, index) => (
-                        <li key={index}>{question}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                <div className="mt-3 rounded-2xl border border-amber-300/20 bg-amber-300/10 p-4 text-sm text-amber-100">
-                  <p>{aiResult.recomendacion}</p>
-                  <p className="mt-2 opacity-90">{aiResult.advertencia}</p>
-                </div>
+              {currentStep < diagnosticSteps.length ? (
                 <button
                   type="button"
-                  onClick={downloadDiagnosisPdf}
-                  className="mt-4 flex w-full items-center justify-center rounded-2xl border border-white/15 bg-white px-5 py-4 font-semibold text-neutral-950 transition hover:bg-neutral-200"
+                  onClick={goToNextStep}
+                  disabled={isRecording || isAnalyzing}
+                  className="inline-flex items-center justify-center rounded-2xl bg-white px-5 py-3 font-semibold text-neutral-950 transition hover:bg-neutral-200 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  <Download className="mr-2 h-5 w-5" />
-                  Descargar informe PDF
+                  Continuar
+                  <ChevronRight className="ml-2 h-5 w-5" />
                 </button>
-              </motion.div>
-            )}
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => goToStep(3)}
+                  disabled={isAnalyzing}
+                  className="inline-flex items-center justify-center rounded-2xl border border-white/15 px-5 py-3 font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Cambiar audio
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </section>
@@ -1670,21 +2001,91 @@ export default function AutoSonarLanding() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 pb-20 lg:px-8">
-        <div className="rounded-[2rem] border border-white/10 bg-white/[0.05] p-8 md:p-10">
-          <div className="mt-8 flex gap-3 rounded-2xl border border-red-300/20 bg-red-300/10 p-4 text-sm text-red-100">
-            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
-            <p>
-              Para evitar problemas legales y de confianza, los resultados deben
-              decir “posible causa” y no “diagnóstico definitivo”. La app debe
-              recomendar taller si detecta riesgo alto.
-            </p>
-          </div>
+      <section className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
+        <div className="max-w-3xl">
+          <p className="text-sm font-medium uppercase tracking-[0.2em] text-purple-300">
+            Planes futuros
+          </p>
+
+          <h2 className="mt-3 text-3xl font-semibold md:text-5xl">
+            Pensado para crecer de demo a producto real.
+          </h2>
+
+          <p className="mt-5 leading-8 text-neutral-300">
+            AutoSonar nace como una herramienta gratuita de diagnóstico orientativo,
+            pero está preparado para evolucionar hacia cuentas de usuario, historial,
+            informes avanzados y soluciones para talleres.
+          </p>
+        </div>
+
+        <div className="mt-10 grid gap-4 lg:grid-cols-3">
+          {pricingPlans.map((plan) => (
+            <div
+              key={plan.name}
+              className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="text-2xl font-semibold text-white">{plan.name}</h3>
+                  <p className="mt-2 text-sm leading-6 text-neutral-400">
+                    {plan.description}
+                  </p>
+                </div>
+
+                <span className="rounded-full bg-emerald-300/10 px-3 py-1 text-xs font-medium text-emerald-300">
+                  {plan.price}
+                </span>
+              </div>
+
+              <ul className="mt-6 space-y-3">
+                {plan.features.map((feature) => (
+                  <li key={feature} className="flex gap-3 text-sm text-neutral-300">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       </section>
+
+      <section className="mx-auto max-w-7xl px-6 pb-20 lg:px-8">
+        <div className="overflow-hidden rounded-[2rem] border border-emerald-300/20 bg-emerald-300/10 p-8 md:p-10">
+          <div className="grid gap-8 md:grid-cols-[1fr_auto] md:items-center">
+            <div>
+              <h2 className="text-3xl font-semibold text-white">
+                ¿Tu coche hace un ruido raro?
+              </h2>
+
+              <p className="mt-3 max-w-2xl leading-7 text-emerald-100/80">
+                Grábalo ahora y recibe una orientación en segundos. Puede que no sea
+                nada grave, o puede que merezca una revisión antes de que vaya a más.
+              </p>
+            </div>
+
+            <a
+              href="#diagnostico"
+              className="inline-flex items-center justify-center rounded-2xl bg-white px-5 py-3 font-semibold text-neutral-950 transition hover:bg-neutral-200"
+            >
+              Empezar diagnóstico
+              <ChevronRight className="ml-2 h-5 w-5" />
+            </a>
+          </div>
+        </div>
+
+        <div className="mt-8 flex gap-3 rounded-2xl border border-red-300/20 bg-red-300/10 p-4 text-sm text-red-100">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
+          <p>
+            Para evitar problemas legales y de confianza, los resultados deben decir
+            “posible causa” y no “diagnóstico definitivo”. La app debe recomendar taller
+            si detecta riesgo alto.
+          </p>
+        </div>
+      </section>
+
+      <CopyrightFooter />
       <LegalNotice />
     </main>
   );
-
-
 }
