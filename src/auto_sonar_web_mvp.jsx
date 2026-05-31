@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import { jsPDF } from "jspdf";
 import {
   Mic,
   Upload,
@@ -14,6 +15,7 @@ import {
   ChevronRight,
   Square,
   Loader2,
+  Download,
 } from "lucide-react";
 
 const MAX_AUDIO_SIZE_MB = 5;
@@ -394,10 +396,8 @@ function LegalNotice() {
               </h3>
 
               <p className="mt-3">
-                Esta web, denominada provisionalmente <strong>AutoSonar</strong>, ha sido
-                creada por <strong>Ramiro</strong>, autor del proyecto, del concepto web,
-                de la estructura funcional, del diseño inicial, de los textos y de la
-                implementación de la plataforma.
+                <strong>AutoSonar</strong>, ha sido
+                creada por <strong>AdriMB200</strong>
               </p>
 
               <p className="mt-3">
@@ -445,7 +445,7 @@ function LegalNotice() {
             </div>
 
             <p className="mt-3">
-              Esta web, denominada provisionalmente <strong>AutoSonar</strong>,
+              <strong>AutoSonar</strong>,
               ha sido creada por <strong>AdriMB200</strong>, https://github.com/adriMB200
             </p>
 
@@ -562,6 +562,85 @@ function LegalNotice() {
   );
 }
 
+function sanitizePdfText(value) {
+  return String(value || "")
+    .replace(/[•]/g, "-")
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'")
+    .replace(/[–—]/g, "-");
+}
+
+function addWrappedText(doc, text, x, y, maxWidth, lineHeight = 6) {
+  const cleanText = sanitizePdfText(text);
+  const lines = doc.splitTextToSize(cleanText, maxWidth);
+
+  lines.forEach((line) => {
+    if (y > 275) {
+      doc.addPage();
+      y = 20;
+    }
+
+    doc.text(line, x, y);
+    y += lineHeight;
+  });
+
+  return y;
+}
+
+function addSectionTitle(doc, title, y) {
+  if (y > 265) {
+    doc.addPage();
+    y = 20;
+  }
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.text(sanitizePdfText(title), 15, y);
+
+  doc.setDrawColor(16, 185, 129);
+  doc.line(15, y + 2, 195, y + 2);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+
+  return y + 9;
+}
+
+function addKeyValue(doc, label, value, x, y) {
+  doc.setFont("helvetica", "bold");
+  doc.text(sanitizePdfText(label), x, y);
+
+  doc.setFont("helvetica", "normal");
+  doc.text(sanitizePdfText(value || "No indicado"), x + 38, y);
+
+  return y + 7;
+}
+
+function addFooterToAllPages(doc) {
+  const pageCount = doc.internal.getNumberOfPages();
+
+  for (let page = 1; page <= pageCount; page += 1) {
+    doc.setPage(page);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.setTextColor(120, 120, 120);
+
+    doc.text(
+      `AutoSonar - Informe orientativo - Pagina ${page} de ${pageCount}`,
+      15,
+      287
+    );
+
+    doc.text(
+      "Este informe no sustituye la revision de un mecanico profesional.",
+      105,
+      287,
+      { align: "center" }
+    );
+  }
+}
+
 function CopyrightFooter() {
   const year = new Date().getFullYear();
 
@@ -570,7 +649,7 @@ function CopyrightFooter() {
       <div className="mx-auto max-w-5xl">
         <p className="text-sm text-neutral-300">
           © {year} AutoSonar · Proyecto, concepto, diseño, textos e implementación
-          desarrollados por <strong className="text-white">Ramiro</strong>.
+          desarrollados por <strong className="text-white">AdriMB200</strong>.
           Todos los derechos reservados.
         </p>
 
@@ -794,6 +873,286 @@ export default function AutoSonarLanding() {
     }
   }
 
+  function downloadDiagnosisPdf() {
+    if (!aiResult) {
+      setAnalyzeError("Primero genera un diagnóstico antes de descargar el informe.");
+      return;
+    }
+
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+    });
+
+    const now = new Date();
+    const fileDate = now.toISOString().slice(0, 10);
+    const formattedDate = now.toLocaleString("es-ES");
+
+    let y = 18;
+
+    // Header
+    doc.setFillColor(10, 15, 20);
+    doc.rect(0, 0, 210, 32, "F");
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    doc.text("AutoSonar", 15, 16);
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text("Informe de diagnostico acustico orientativo", 15, 24);
+
+    doc.setTextColor(16, 185, 129);
+    doc.setFont("helvetica", "bold");
+    doc.text("Diagnose. Detect. Drive.", 195, 16, { align: "right" });
+
+    doc.setTextColor(30, 30, 30);
+    y = 42;
+
+    // Datos generales
+    y = addSectionTitle(doc, "1. Datos del informe", y);
+
+    y = addKeyValue(doc, "Fecha:", formattedDate, 15, y);
+    y = addKeyValue(doc, "Vehiculo:", carSummary, 15, y);
+    y = addKeyValue(doc, "Audio:", audioFile?.name || "No indicado", 15, y);
+    y += 3;
+
+    // Datos del vehículo
+    y = addSectionTitle(doc, "2. Datos del vehiculo", y);
+
+    y = addKeyValue(doc, "Marca:", brand, 15, y);
+    y = addKeyValue(doc, "Modelo:", model, 15, y);
+    y = addKeyValue(doc, "Anio:", year, 15, y);
+    y = addKeyValue(doc, "Motor:", engine, 15, y);
+    y += 3;
+
+    // Síntoma
+    y = addSectionTitle(doc, "3. Sintoma indicado por el usuario", y);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+
+    y = addWrappedText(
+      doc,
+      situation || "El usuario no ha indicado una descripcion adicional del ruido.",
+      15,
+      y,
+      180
+    );
+
+    y += 4;
+
+    // Resultado
+    y = addSectionTitle(doc, "4. Resultado del analisis", y);
+
+    y = addKeyValue(
+      doc,
+      "Identificado:",
+      aiResult.sonido_identificado === false ? "No" : "Si",
+      15,
+      y
+    );
+
+    y = addKeyValue(
+      doc,
+      "Calidad:",
+      aiResult.calidad_audio || "No indicada",
+      15,
+      y
+    );
+
+    y = addKeyValue(
+      doc,
+      "Urgencia:",
+      aiResult.urgencia_general || "No indicada",
+      15,
+      y
+    );
+
+    y += 2;
+
+    doc.setFont("helvetica", "bold");
+    doc.text("Resumen:", 15, y);
+    y += 6;
+
+    doc.setFont("helvetica", "normal");
+    y = addWrappedText(
+      doc,
+      aiResult.resumen || "No se ha generado resumen.",
+      15,
+      y,
+      180
+    );
+
+    y += 4;
+
+    // Información encontrada
+    if (aiResult.informacion_encontrada) {
+      y = addSectionTitle(doc, "5. Informacion encontrada", y);
+
+      y = addWrappedText(
+        doc,
+        aiResult.informacion_encontrada,
+        15,
+        y,
+        180
+      );
+
+      y += 4;
+    }
+
+    // Posibles causas
+    y = addSectionTitle(doc, "6. Posibles causas", y);
+
+    if (aiResult.posibles_causas?.length > 0) {
+      aiResult.posibles_causas.forEach((cause, index) => {
+        if (y > 245) {
+          doc.addPage();
+          y = 20;
+        }
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.text(
+          `${index + 1}. ${sanitizePdfText(cause.causa || "Causa no indicada")}`,
+          15,
+          y
+        );
+
+        y += 6;
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+
+        y = addKeyValue(
+          doc,
+          "Confianza:",
+          `${cause.confianza ?? "No indicada"}%`,
+          18,
+          y
+        );
+
+        y = addKeyValue(
+          doc,
+          "Urgencia:",
+          cause.urgencia || "No indicada",
+          18,
+          y
+        );
+
+        doc.setFont("helvetica", "bold");
+        doc.text("Explicacion:", 18, y);
+        y += 6;
+
+        doc.setFont("helvetica", "normal");
+        y = addWrappedText(
+          doc,
+          cause.explicacion || "No indicada.",
+          18,
+          y,
+          174
+        );
+
+        y += 2;
+
+        doc.setFont("helvetica", "bold");
+        doc.text("Que hacer:", 18, y);
+        y += 6;
+
+        doc.setFont("helvetica", "normal");
+        y = addWrappedText(
+          doc,
+          cause.que_hacer || "No indicado.",
+          18,
+          y,
+          174
+        );
+
+        y += 6;
+      });
+    } else {
+      y = addWrappedText(
+        doc,
+        "No se ha identificado una causa suficientemente fiable. Se recomienda aportar mas sintomas o grabar otro audio mas claro.",
+        15,
+        y,
+        180
+      );
+
+      y += 4;
+    }
+
+    // Preguntas para afinar
+    if (aiResult.preguntas_para_afinar?.length > 0) {
+      y = addSectionTitle(doc, "7. Preguntas para afinar el diagnostico", y);
+
+      aiResult.preguntas_para_afinar.forEach((question, index) => {
+        y = addWrappedText(doc, `${index + 1}. ${question}`, 15, y, 180);
+      });
+
+      y += 4;
+    }
+
+    // Recomendación
+    y = addSectionTitle(doc, "8. Recomendacion", y);
+
+    y = addWrappedText(
+      doc,
+      aiResult.recomendacion || "No se ha generado una recomendacion.",
+      15,
+      y,
+      180
+    );
+
+    y += 4;
+
+    // Advertencia
+    y = addSectionTitle(doc, "9. Advertencia y exencion de responsabilidad", y);
+
+    y = addWrappedText(
+      doc,
+      aiResult.advertencia ||
+      "Los resultados de AutoSonar son orientativos y no sustituyen la revision de un mecanico profesional.",
+      15,
+      y,
+      180
+    );
+
+    y += 4;
+
+    y = addWrappedText(
+      doc,
+      "El autor de AutoSonar no se hace responsable de danos, averias, accidentes, perdidas economicas, decisiones de reparacion o cualquier consecuencia derivada de interpretar o seguir este informe. Si el vehiculo presenta perdida de potencia, humo, olor a quemado, testigos encendidos, fallo de frenos, direccion anomala o golpes fuertes, no sigas circulando y consulta con un taller o servicio de asistencia.",
+      15,
+      y,
+      180
+    );
+
+    y += 4;
+
+    // Copyright
+    y = addSectionTitle(doc, "10. Autor y copyright", y);
+
+    y = addWrappedText(
+      doc,
+      "AutoSonar es un proyecto creado por AdriMB200. Proyecto, concepto, diseno, textos e implementacion desarrollados como herramienta experimental de diagnostico acustico orientativo para vehiculos. Todos los derechos reservados.",
+      15,
+      y,
+      180
+    );
+
+    addFooterToAllPages(doc);
+
+    const safeModel = sanitizePdfText(model || "vehiculo")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/gi, "-")
+      .replace(/^-|-$/g, "");
+
+    doc.save(`autosonar-informe-${safeModel || "vehiculo"}-${fileDate}.pdf`);
+  }
+
   return (
     <main className="min-h-screen bg-neutral-950 text-white">
       <CookieBanner />
@@ -807,11 +1166,6 @@ export default function AutoSonarLanding() {
             transition={{ duration: 0.5 }}
             className="flex flex-col justify-center"
           >
-            <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-neutral-200 backdrop-blur">
-              <Volume2 className="h-4 w-4" />
-              Diagnóstico acústico para coches
-            </div>
-
             <h1 className="max-w-3xl text-5xl font-semibold tracking-tight text-white md:text-7xl">
               Analiza con IA el sonido de tu coche y orienta su diagnóstico
             </h1>
@@ -1269,6 +1623,14 @@ export default function AutoSonarLanding() {
                   <p>{aiResult.recomendacion}</p>
                   <p className="mt-2 opacity-90">{aiResult.advertencia}</p>
                 </div>
+                <button
+                  type="button"
+                  onClick={downloadDiagnosisPdf}
+                  className="mt-4 flex w-full items-center justify-center rounded-2xl border border-white/15 bg-white px-5 py-4 font-semibold text-neutral-950 transition hover:bg-neutral-200"
+                >
+                  <Download className="mr-2 h-5 w-5" />
+                  Descargar informe PDF
+                </button>
               </motion.div>
             )}
           </div>
